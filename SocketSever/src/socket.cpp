@@ -1,4 +1,5 @@
 #include "../include/socket.h"
+#include "iostream"
 
 Socket::Socket():iaddrSize(sizeof(SOCKADDR_IN))
 {
@@ -33,7 +34,7 @@ bool Socket::SocketRecv(SOCKET s, char* buf, int len, int flag)
 			if (ret == EAGAIN)
 				break;
 			else
-				return true;
+				return false;
 		}
 		else if (ret == 0)
 		{
@@ -46,4 +47,12 @@ bool Socket::SocketRecv(SOCKET s, char* buf, int len, int flag)
 			rs = 1;// 需要再次读取
 	}
 	return true;
+
+
+}
+
+bool Socket::SocketClose(SOCKET s)
+{
+	closesocket(s);
+	return false;
 }

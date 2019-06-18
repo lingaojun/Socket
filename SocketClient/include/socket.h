@@ -3,7 +3,7 @@
 
 #define SERVER_ADDRESS "192.168.1.105" //服务器端IP地址      
 #define PORT           5150         //服务器的端口号      
-#define MSGSIZE        1         //收发缓冲区的大小
+#define MSGSIZE        1024        //收发缓冲区的大小
 
 #include <WINSOCK2.H>   
 class Socket

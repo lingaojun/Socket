@@ -19,6 +19,7 @@ public:
 	Socket();
 	bool SocketInit();
 	bool SocketRecv(SOCKET s,char* buf,int len, int flag);
+	bool SocketClose(SOCKET s);
 private:
 
 };

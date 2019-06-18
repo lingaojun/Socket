@@ -1,4 +1,5 @@
 #include "../include/socket.h"
+#include "iostream"
 
 Socket::Socket()
 {

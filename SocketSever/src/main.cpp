@@ -14,21 +14,25 @@
 void thread1()
 {
 	Socket SocketSever;
+	int blocknums;
+	std::cout << "RecvFun" << std::endl;
 	std::ofstream ofs("../../../out.txt");
 	bool SocketRecvStop = false;
 	printf("Accepted client:%s:%d\n", inet_ntoa(SocketSever.client.sin_addr), ntohs(SocketSever.client.sin_port));
 	SocketSever.SocketInit(); //SocketInit
-	if (!SocketSever.SocketRecv(SocketSever.sClient, SocketSever.szMessage, MSGSIZE, 0)) //Recv
+	SocketSever.ret = SocketSever.SocketRecv(SocketSever.sClient, SocketSever.szMessage, MSGSIZE, 0); //先接受blocknum
+	blocknums = atoi(SocketSever.szMessage);
+	printf("FileBuffBlockNum is %d", blocknums);
+	for (int i = 0; i < blocknums; i++)
 	{
-		std::cout << "SocketRecv Failed" << std::endl;
-		SocketSever.SocketClose(SocketSever.sListen);
+		std::cout << i << std::endl;
+			SocketSever.SocketRecv(SocketSever.sClient, SocketSever.szMessage, MSGSIZE, 0);
+		std::cout << SocketSever.szMessage << std::endl;
 	}
-	SocketSever.szMessage[SocketSever.ret] = '\0';
-	printf("Received [%d bytes]: '%s'\n", SocketSever.ret, SocketSever.szMessage);
 	ofs << SocketSever.szMessage; //将读取来得内容流入需要输出的文档。
 	ofs.close();
 }
-
+ 
 void thread2(int a)
 {
 	

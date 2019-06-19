@@ -14,6 +14,7 @@
 void thread1()
 {
 	Socket SocketSever;
+	std::ofstream ofs("../../../out.txt");
 	bool SocketRecvStop = false;
 	printf("Accepted client:%s:%d\n", inet_ntoa(SocketSever.client.sin_addr), ntohs(SocketSever.client.sin_port));
 	SocketSever.SocketInit(); //SocketInit
@@ -24,6 +25,8 @@ void thread1()
 	}
 	SocketSever.szMessage[SocketSever.ret] = '\0';
 	printf("Received [%d bytes]: '%s'\n", SocketSever.ret, SocketSever.szMessage);
+	ofs << SocketSever.szMessage; //将读取来得内容流入需要输出的文档。
+	ofs.close();
 }
 
 void thread2(int a)

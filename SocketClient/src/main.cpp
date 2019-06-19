@@ -13,7 +13,7 @@ void thread1()
 	SocketClient.SocketInit();
 
 	char buffer[1024];
-	std::fstream ifs;
+	std::ifstream ifs;
 	ifs.open("../../../test.txt");
 	if (!ifs.is_open())
 	{
@@ -26,6 +26,7 @@ void thread1()
 	}
 	printf("Send:");
 	strcpy(SocketClient.szMessage, buffer);
+	ifs.close();
 	std::cout << SocketClient.szMessage << std::endl;
 	std::cout << strlen(SocketClient.szMessage) << std::endl;
 	if (SocketClient.SocketSend(SocketClient.sClient, SocketClient.szMessage, strlen(SocketClient.szMessage), 0) == false) //sClient指明用哪个连接发送； szMessage指明待发送数据的保存地址 ；strlen(szMessage)指明数据长度    
@@ -35,6 +36,7 @@ void thread1()
 	// 释放连接和进行结束工作      
 	closesocket(SocketClient.sClient);
 	WSACleanup();
+
 }
 void thread2()
 {

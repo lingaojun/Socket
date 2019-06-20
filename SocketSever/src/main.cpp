@@ -11,26 +11,36 @@
 #include "thread"
 #pragma comment(lib, "ws2_32.lib")      
 
+constexpr auto BUFFSIZE = 1024;
+
 void thread1()
 {
 	Socket SocketSever;
-	int blocknums;
-	std::cout << "RecvFun" << std::endl;
-	std::ofstream ofs("../../../out.txt");
-	bool SocketRecvStop = false;
-	printf("Accepted client:%s:%d\n", inet_ntoa(SocketSever.client.sin_addr), ntohs(SocketSever.client.sin_port));
-	SocketSever.SocketInit(); //SocketInit
-	SocketSever.ret = SocketSever.SocketRecv(SocketSever.sClient, SocketSever.szMessage, MSGSIZE, 0); //先接受blocknum
-	blocknums = atoi(SocketSever.szMessage);
-	printf("FileBuffBlockNum is %d", blocknums);
-	for (int i = 0; i < blocknums; i++)
+	char buffer[BUFFSIZE] = { 0 };
+	int readLen = 0;
+	std::string desFileName = "../../../out.txt";
+	std::ofstream desFile;
+	std::cout << "start recv!" << std::endl;
+	desFile.open(desFileName.c_str(), std::ios::binary);
+	if (!desFile)
 	{
-		std::cout << i << std::endl;
-			SocketSever.SocketRecv(SocketSever.sClient, SocketSever.szMessage, MSGSIZE, 0);
-		std::cout << SocketSever.szMessage << std::endl;
+		std::cout << "desFile is Null "<< std::endl;
 	}
-	ofs << SocketSever.szMessage; //将读取来得内容流入需要输出的文档。
-	ofs.close();
+
+	SocketSever.SocketInit();
+	do
+	{
+		readLen = recv(SocketSever.sListen, buffer, BUFFSIZE, 0);
+		//std::cout << readLen << std::endl;
+		if(readLen)
+		{
+			desFile.write(buffer, readLen);
+		}
+		else break;
+	} while (true);
+
+	desFile.close();
+	
 }
  
 void thread2(int a)

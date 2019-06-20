@@ -12,21 +12,23 @@ bool Socket::SocketInit()
 
 	local.sin_family = AF_INET;
 	local.sin_port = htons(PORT);
-	local.sin_addr.s_addr = htonl(INADDR_ANY);
-	bind(sListen, (struct sockaddr *) &local, sizeof(SOCKADDR_IN));
-
-	listen(sListen, 1);
-
-	sClient = accept(sListen, (struct sockaddr *) &client, &iaddrSize);
+	local.sin_addr.S_un.S_addr = inet_addr("192.168.179.1");
+	if (connect(sListen, (sockaddr *)&local, sizeof(local)) == SOCKET_ERROR)
+	{  //连接失败 
+		printf("connect error !");
+		closesocket(sListen);
+		return false;
+	}
 	return true;
 }
 
 bool Socket::SocketRecv(SOCKET s, char* buf, int len, int flag)
 {
 	bool rs = true;
-	while (rs)
+	while (true)
 	{
-		ret = recv(s, buf, len, 0); 
+		ret = recv(s, buf, len, flag);
+		std::cout << ret << std::endl;
 		if (ret < 0)
 		{
 			// 由于是非阻塞的模式,所以当buflen为EAGAIN时,表示当前缓冲区已无数据可读
@@ -39,7 +41,8 @@ bool Socket::SocketRecv(SOCKET s, char* buf, int len, int flag)
 		else if (ret == 0)
 		{
 			// 这里表示对端的socket已正常关闭.
-			return true;
+			//std::cout << "Socket Recv is over" << std::endl;
+			break;
 		}
 		if (ret != sizeof(buf))
 			rs = 0;

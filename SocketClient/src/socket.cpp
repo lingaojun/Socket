@@ -20,19 +20,26 @@ bool Socket::SocketInit()
 	server.sin_addr.s_addr = inet_addr(SERVER_ADDRESS); //指明连接服务器的IP地址      
 														//结构SOCKADDR_IN的sin_addr字段用于保存IP地址，sin_addr字段也是一个结构体，sin_addr.s_addr用于最终保存IP地址      
 														//inet_addr()用于将 形如的"127.0.0.1"字符串转换为IP地址格式      
-	//连到刚才指明的服务器上      
-	connect(sClient, (struct sockaddr *) &server, sizeof(SOCKADDR_IN)); //连接后可以用sClient来使用这个连接      
-																		//server保存了远程服务器的地址信息     
+	if (bind(sClient, (LPSOCKADDR)&server, sizeof(server)) == SOCKET_ERROR)
+	{
+		printf("bind error !");
+	}
+
+	//开始监听  
+	if (listen(sClient, 5) == SOCKET_ERROR)
+	{
+		printf("listen error !");
+		return false;
+	}
 	return true;
 }
 
 bool Socket::SocketSend(SOCKET s, char *buf, int len, int flags)
 {
 	int ret = send(s, buf, len, flags);
-	if (ret < 0)//正常情况下send将返回发送数据的总数
+	if (ret < 0)
 	{
-		std::cout << "SocketSend Error!" << std::endl;
-		std::cout << WSAGetLastError() << std::endl;
+		std::cout << "send is error" << std::endl;
 		return false;
 	}
 	return true;

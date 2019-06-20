@@ -9,41 +9,57 @@
 #pragma comment(lib, "ws2_32.lib")      
 
 //Sever端 发送文件数据
+constexpr auto BUFFSIZE = 1024;
+
 void thread1()
 {
 	Socket SocketClient;
-	SocketClient.SocketInit();
-	char buffer[1024];
-	char *firstblock = new char ;
-	std::ifstream ifs;
-	int filesize = 0;
-	int blocknums = 0;
-	int readLen = 0;
-	ifs.open("../../../test.txt",std::ios::in|std::ios::binary);
-	std::cout << "SendFun" << std::endl;
-	if (!ifs.is_open())
+	SocketClient.SocketInit();  
+	std::string srcFileName = "../../../test.txt";
+	std::ifstream srcFile;
+	srcFile.open(srcFileName.c_str(), std::ios::binary);
+	if (!srcFile) 
 	{
-		std::cout << "Cant Open The File" << std::endl;
+		return;
 	}
-	else
+	int nAddrlen = sizeof(SocketClient.server);
+	while (1)
 	{
-		ifs.seekg(0, std::ios::end); //对文件进行定位到最后
-		filesize = ifs.tellg(); //因为定位到文件结束，所以为文件大小
-		ifs.seekg(0, std::ios::beg);//再次定位到文件开头
-		std::cout << "size is "<< filesize << std::endl;
-	}
-	blocknums = (filesize % (MSGSIZE-1)) ? ( filesize / (MSGSIZE-1)+ 1) : (filesize / (MSGSIZE-1));
-	std::cout << "blocknums is " << blocknums << std::endl;
-	itoa(blocknums, firstblock, 10);
-	SocketClient.SocketSend(SocketClient.sClient, firstblock, strlen(SocketClient.szMessage), 0); //先发送block数量
-	for (int i = 0; i < blocknums; i++)
-	{
-		ifs.read(SocketClient.szMessage, MSGSIZE-1);
-		SocketClient.szMessage[MSGSIZE-1] = '\0';
-		SocketClient.SocketSend(SocketClient.sClient, SocketClient.szMessage, strlen(SocketClient.szMessage), 0);
-		std::cout << SocketClient.szMessage << std::endl;
-	}
+		printf("等待连接...\n");
+		SocketClient.sListen = accept(SocketClient.sClient, (SOCKADDR *)&SocketClient.server, &nAddrlen);
+		if (SocketClient.sListen == INVALID_SOCKET)
+		{
+			printf("accept error !");
+			continue;
+		}
+		printf("接受到一个连接：%s \r\n", inet_ntoa(SocketClient.server.sin_addr));
+		int haveSend = 0;
+		long long int filesize = 0;
+		char buffer[BUFFSIZE] = { 0 };
+		int readLen = 0;
+		std::string srcFileName = "../../../test.txt";
+		std::ifstream srcFile;
+		srcFile.open(srcFileName.c_str(), std::ios::binary);
+		if (!srcFile) 
+		{
+			std::cout << "srcFile is error " << std::endl;
+		}
+		srcFile.seekg(0, std::ios::end);
+		filesize = srcFile.tellg();
+		srcFile.seekg(0, std::ios::beg);
+		while (!srcFile.eof()) 
+		{
+			srcFile.read(buffer, BUFFSIZE);//read之后文件指针会自动移动
+			readLen = srcFile.gcount();
+			send(SocketClient.sListen, buffer, readLen, 0);
+			haveSend += readLen;
+			std::cout << haveSend << "B/" << filesize << "B"<<std::endl;
+		}
+		srcFile.close();
+		std::cout << "send: " << haveSend << "B" << std::endl;
 
+		closesocket(SocketClient.sListen);
+	}
 	// 释放连接和进行结束工作      
 	closesocket(SocketClient.sClient);
 	WSACleanup();
@@ -51,33 +67,6 @@ void thread1()
 }
 void thread2()
 {
-	Socket SocketClient;
-	SocketClient.SocketInit();
-
-	char buffer[1024];
-	std::ifstream ifs;
-	ifs.open("../../../test.png");
-	if (!ifs.is_open())
-	{
-		std::cout << "Cant Open The File" << std::endl;
-	}
-	while (!ifs.eof())
-	{
-		ifs.getline(buffer, 1024);
-		//std::cout << buffer << std::endl;
-	}
-	printf("Send:");
-	strcpy(SocketClient.szMessage, buffer);
-	ifs.close();
-	std::cout << SocketClient.szMessage << std::endl;
-	std::cout << strlen(SocketClient.szMessage) << std::endl;
-	if (SocketClient.SocketSend(SocketClient.sClient, SocketClient.szMessage, strlen(SocketClient.szMessage), 0) == false) //sClient指明用哪个连接发送； szMessage指明待发送数据的保存地址 ；strlen(szMessage)指明数据长度    
-	{
-		std::cout << "SocketSend Error " << std::endl;
-	}
-	// 释放连接和进行结束工作      
-	closesocket(SocketClient.sClient);
-	WSACleanup();
 }
 
 int main()

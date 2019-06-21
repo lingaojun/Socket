@@ -18,6 +18,7 @@ void thread1()
 	Socket SocketSever;
 	char buffer[BUFFSIZE] = { 0 };
 	int readLen = 0;
+	long long int filesize = 0;
 	std::string desFileName = "../../../out.txt";
 	std::ofstream desFile;
 	std::cout << "start recv!" << std::endl;
@@ -30,13 +31,18 @@ void thread1()
 	SocketSever.SocketInit();
 	do
 	{
-		readLen = recv(SocketSever.sListen, buffer, BUFFSIZE, 0);
-		//std::cout << readLen << std::endl;
-		if(readLen)
+		if (SocketSever.SocketRecv(SocketSever.sListen, buffer, BUFFSIZE, 0))
 		{
-			desFile.write(buffer, readLen);
+			std::cout << "filesize is " << filesize << std::endl;
+			std::cout << buffer << std::endl;
+			desFile.write(buffer, SocketSever.ret);
+			filesize += SocketSever.ret;
 		}
-		else break;
+		else
+		{
+			std::cout << "SocketRecv failed" << std::endl;
+			break;
+		}
 	} while (true);
 
 	desFile.close();

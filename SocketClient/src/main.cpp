@@ -15,16 +15,23 @@ void thread1()
 {
 	Socket SocketClient;
 	SocketClient.SocketInit();  
+
+	long long int filesize = 0;
 	std::string srcFileName = "../../../test.txt";
 	std::ifstream srcFile;
-	srcFile.open(srcFileName.c_str(), std::ios::binary);
-	if (!srcFile) 
-	{
-		return;
-	}
+	int haveSend = 0;
+	int readLen = 0;
+
 	int nAddrlen = sizeof(SocketClient.server);
 	while (1)
 	{
+
+		srcFile.open(srcFileName.c_str(), std::ios::binary);
+		if (!srcFile)
+		{
+			return;
+		}
+
 		printf("等待连接...\n");
 		SocketClient.sListen = accept(SocketClient.sClient, (SOCKADDR *)&SocketClient.server, &nAddrlen);
 		if (SocketClient.sListen == INVALID_SOCKET)
@@ -32,29 +39,22 @@ void thread1()
 			printf("accept error !");
 			continue;
 		}
+
 		printf("接受到一个连接：%s \r\n", inet_ntoa(SocketClient.server.sin_addr));
-		int haveSend = 0;
-		long long int filesize = 0;
-		char buffer[BUFFSIZE] = { 0 };
-		int readLen = 0;
-		std::string srcFileName = "../../../test.txt";
-		std::ifstream srcFile;
-		srcFile.open(srcFileName.c_str(), std::ios::binary);
-		if (!srcFile) 
-		{
-			std::cout << "srcFile is error " << std::endl;
-		}
 		srcFile.seekg(0, std::ios::end);
 		filesize = srcFile.tellg();
 		srcFile.seekg(0, std::ios::beg);
 		while (!srcFile.eof()) 
 		{
+			char buffer[BUFFSIZE] = { 0 };
 			srcFile.read(buffer, BUFFSIZE);//read之后文件指针会自动移动
 			readLen = srcFile.gcount();
 			send(SocketClient.sListen, buffer, readLen, 0);
 			haveSend += readLen;
 			std::cout << haveSend << "B/" << filesize << "B"<<std::endl;
+			std::cout << buffer << std::endl;
 		}
+		haveSend = readLen = filesize  = 0;
 		srcFile.close();
 		std::cout << "send: " << haveSend << "B" << std::endl;
 
